@@ -1,8 +1,8 @@
 import './app.css';
-
-function App() {
+import Login from './components/login/login';
+function App({authService}) {
   return (
-    <h1>Hello</h1>
+    <Login authService={authService}/>
   );
 }
 
