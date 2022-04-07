@@ -1,19 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Footer from '../footer/footer';
 import Header from '../header/header';
 import styles from './login.module.css';
+import { useNavigate } from 'react-router-dom';
 const Login = ({authService}) =>{
+    const navigate = useNavigate();
+    const goToMaker = userId => {
+        navigate('/maker',{state:{id:userId}});
+        // history.push({
+        //     pathName:'/maker',
+        //     state: {id:userId},
+        // });
+    };
     const onLogin = (event) =>{
         authService
         .login(event.currentTarget.textContent)
-        .then(console.log)
-    }
+        .then(data=> goToMaker(data.user.uid));
+    };
+
+    //사용자 로그인되어있을 경우
+    useEffect(()=>{
+        authService.onAuthChange(user =>{
+            user && goToMaker(user.uid);
+        })
+    });
     const onLogout = () => {
 
-    }
+    };
     return(
         <section className={styles.login}>
-            <Header onLogout={onLogout}/>
+            <Header/>
             <section >
                 <h1>Login</h1>
                 <ul className={styles.list}>
