@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../card/card';
 import Editor from '../editor/editor';
 import Footer from '../footer/footer';
@@ -7,50 +7,35 @@ import Header from '../header/header';
 import Preview from '../preview/preview';
 import styles from './maker.module.css';
 
-const Maker = ({ FileInput, authService}) => {
-    const [cards,setCards] = useState({
-        '1':{
-            id: '1',
-            name: 'Jack1',
-            company: 'Samsung',
-            theme: 'dark',
-            title: 'Software Engineer',
-            email: 'whdgurtpqms@gmail.com',
-            message: 'go for it',
-            fileName: 'jack',
-            fileURL: 'jack.png'
-        },
-        '2':{
-            id: '2',
-            name: 'Jack2',
-            company: 'Samsung',
-            theme: 'light',
-            title: 'Software Engineer',
-            email: 'whdgurtpqms@gmail.com',
-            message: 'go for it',
-            fileName: 'jack',
-            fileURL: null
-        },
-        '3':{
-            id: '3',
-            name: 'Jack3',
-            company: 'Samsung',
-            theme: 'colorful',
-            title: 'Software Engineer',
-            email: 'whdgurtpqms@gmail.com',
-            message: 'go for it',
-            fileName: 'jack',
-            fileURL: null
-        }
-    });
+const Maker = ({ FileInput, authService, cardRepository}) => {
+    const locationState = useLocation().state;
+    const [cards,setCards] = useState({});
+    const [userId, setUserId] = useState(locationState&&locationState.id);
     const navigate = useNavigate();
     const onLogout = () => {
         authService.logout();
     };
+        
 
     useEffect(()=>{
+        if(!userId){
+            return;
+        }
+        // stopSync = card_repository.js에서 return gks off(query); 함수임
+        const stopSync = cardRepository.syncCards(userId, cards =>{
+            setCards(cards);
+        })
+        //컴포넌트가 unmount되었을 때, syncCards함수에서 구현한 return 함수(return () => off(query);)를 호출해준다.
+        return () => {
+            //리소스정리, 메모리정리 => 불필요한 네트워크 사용 최소화
+            stopSync();
+        }
+    },[userId]);
+    useEffect(()=>{
         authService.onAuthChange(user=>{
-            if(!user){
+            if(user){
+                setUserId(user.uid);
+            }else{
                 navigate('/');
             }
         })
@@ -72,6 +57,7 @@ const Maker = ({ FileInput, authService}) => {
             updated[card.id] = card;
             return updated;
         });
+        cardRepository.saveCard(userId, card);
     }
     const deleteCard = (card) => {
         setCards(cards => {
@@ -79,6 +65,7 @@ const Maker = ({ FileInput, authService}) => {
             delete updated[card.id];
             return updated;
         });
+        cardRepository.removeCard(userId, card);
     }
     return(
         <section className={styles.maker}>

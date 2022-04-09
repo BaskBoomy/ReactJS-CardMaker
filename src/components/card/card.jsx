@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './card.module.css';
 const DEFAULT_IMAGE = '/images/default_logo.png';
 const Card = ({card}) => {
+    console.log(card);
     const {name, company, title, email, message, theme, fileName, fileURL} = card;
     const url = fileURL || DEFAULT_IMAGE;
     return(
@@ -20,7 +21,7 @@ const Card = ({card}) => {
 
 function getStyles(theme){
     switch(theme){
-        case 'dark':
+        case "dark":
             return styles.dark;
         case 'light':
             return styles.light;
