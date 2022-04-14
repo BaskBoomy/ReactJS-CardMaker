@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card from '../card/card';
 import Editor from '../editor/editor';
@@ -12,9 +12,9 @@ const Maker = ({ FileInput, authService, cardRepository}) => {
     const [cards,setCards] = useState({});
     const [userId, setUserId] = useState(locationState&&locationState.id);
     const navigate = useNavigate();
-    const onLogout = () => {
+    const onLogout = useCallback(() => {
         authService.logout();
-    };
+    },[authService]);
         
 
     useEffect(()=>{
@@ -30,7 +30,7 @@ const Maker = ({ FileInput, authService, cardRepository}) => {
             //리소스정리, 메모리정리 => 불필요한 네트워크 사용 최소화
             stopSync();
         }
-    },[userId]);
+    },[userId, cardRepository]);
     useEffect(()=>{
         authService.onAuthChange(user=>{
             if(user){
@@ -39,7 +39,7 @@ const Maker = ({ FileInput, authService, cardRepository}) => {
                 navigate('/');
             }
         })
-    })
+    },[userId, authService,locationState])
 
     const createOrUpdateCard = (card) => {
         /*
